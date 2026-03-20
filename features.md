@@ -54,7 +54,7 @@ Slides up over the Home screen. Not a page navigation.
 - Injection site — dropdown with SubQ presets: "Left abdomen", "Right abdomen", "Left thigh", "Right thigh", "Left deltoid", "Right deltoid", plus a "Custom..." option for free text
 
 **Optional fields (below a divider, labeled "Optional"):**
-- Weight (kg) — numeric input
+- Weight (lbs) — numeric input
 - Body fat % — numeric input
 - Symptoms / notes — free-text area with placeholder "Any symptoms or observations..."
 

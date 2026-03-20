@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Ethan\\\\OneDrive - Georgia Institute of Technology\\\\Projects\\\\Peptide Tracker\\\\peptide_community'; pnpm approve-builds 2>&1\" 2>&1)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Ethan\\\\OneDrive - Georgia Institute of Technology\\\\Projects\\\\Peptide Tracker\\\\peptide_community\\\\apps\\\\web'; pnpm typecheck 2>&1\" 2>&1)"
+    ]
+  }
+}

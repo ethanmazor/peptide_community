@@ -5,6 +5,12 @@ import AuthCallback from './pages/AuthCallback'
 import ProtectedLayout from './components/ProtectedLayout'
 import TabLayout from './layouts/TabLayout'
 import Home from './pages/Home'
+import History from './pages/History'
+import Calculator from './pages/Calculator'
+import Photos from './pages/Photos'
+import Settings from './pages/Settings'
+import ProtocolBuilder from './pages/ProtocolBuilder'
+import VialSetup from './pages/VialSetup'
 
 function App() {
   const { loading } = useSession()
@@ -22,13 +28,16 @@ function App() {
       <Route path="/login" element={<AuthPage />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route element={<ProtectedLayout />}>
+        {/* Full-screen flows outside the tab bar */}
+        <Route path="settings/protocols/new" element={<ProtocolBuilder />} />
+        <Route path="vial-setup" element={<VialSetup />} />
+
         <Route element={<TabLayout />}>
           <Route index element={<Home />} />
-          <Route path="history" element={<div className="p-4 text-[var(--color-text-secondary)]">History (coming soon)</div>} />
-          <Route path="calc" element={<div className="p-4 text-[var(--color-text-secondary)]">Calculator (coming soon)</div>} />
-          <Route path="photos" element={<div className="p-4 text-[var(--color-text-secondary)]">Photos (coming soon)</div>} />
-          <Route path="settings" element={<div className="p-4 text-[var(--color-text-secondary)]">Settings (coming soon)</div>} />
-          <Route path="settings/protocols/new" element={<div className="p-4 text-[var(--color-text-secondary)]">New Protocol (coming soon)</div>} />
+          <Route path="history" element={<History />} />
+          <Route path="calc" element={<Calculator />} />
+          <Route path="photos" element={<Photos />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

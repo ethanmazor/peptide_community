@@ -3,6 +3,9 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import health from './routes/health.js'
 import doses from './routes/doses.js'
+import protocols from './routes/protocols.js'
+import peptides from './routes/peptides.js'
+import vials from './routes/vials.js'
 
 const app = new Hono()
 
@@ -17,6 +20,9 @@ app.use(
 
 app.route('/health', health)
 app.route('/doses', doses)
+app.route('/protocols', protocols)
+app.route('/peptides', peptides)
+app.route('/vials', vials)
 
 const port = Number(process.env.PORT ?? 3001)
 

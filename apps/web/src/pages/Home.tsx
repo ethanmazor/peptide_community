@@ -5,6 +5,7 @@ import CycleProgressBar from '../components/CycleProgressBar'
 import DoseCard from '../components/DoseCard'
 import LogDoseSheet from '../components/LogDoseSheet'
 import FAB from '../components/FAB'
+import ActiveInSystemSection from '../components/ActiveInSystemSection'
 import type { HomeProtocolPeptide } from '../hooks/useHomeData'
 
 export default function Home() {
@@ -62,10 +63,14 @@ export default function Home() {
   return (
     <div className="relative">
       <div className="px-4 pt-5">
-        <h1 className="text-[20px] font-medium">Today</h1>
+        <h1 className="text-[20px] font-medium">
+          {new Date().toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}
+        </h1>
       </div>
 
       <CycleProgressBar protocol={protocol} />
+
+      <ActiveInSystemSection items={items} />
 
       <div className="px-4 mt-1 flex flex-col gap-2.5 pb-6">
         <p className="text-[13px] font-medium uppercase tracking-widest text-[var(--color-text-tertiary)] mb-1">

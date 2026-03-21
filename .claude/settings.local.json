@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Ethan\\\\OneDrive - Georgia Institute of Technology\\\\Projects\\\\Peptide Tracker\\\\peptide_community'; pnpm approve-builds 2>&1\" 2>&1)",
-      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Ethan\\\\OneDrive - Georgia Institute of Technology\\\\Projects\\\\Peptide Tracker\\\\peptide_community\\\\apps\\\\web'; pnpm typecheck 2>&1\" 2>&1)"
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Ethan\\\\OneDrive - Georgia Institute of Technology\\\\Projects\\\\Peptide Tracker\\\\peptide_community\\\\apps\\\\web'; pnpm typecheck 2>&1\" 2>&1)",
+      "Bash(pnpm:*)",
+      "Bash(node_modules/.bin/vite --host)",
+      "Bash(ngrok version:*)",
+      "Bash(curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc)",
+      "Bash(sudo tee:*)",
+      "Bash(sudo apt-get:*)",
+      "Bash(ngrok http:*)",
+      "Bash(curl -s http://localhost:4040/api/tunnels)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(t[''''public_url'''']\\) for t in d[''''tunnels'''']]\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

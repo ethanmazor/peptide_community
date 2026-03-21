@@ -9,4 +9,7 @@ export default defineConfig({
       '@peptide/types': path.resolve(__dirname, '../../packages/types/src/index.ts'),
     },
   },
+  server: {
+    allowedHosts: ['eucalyptic-nonpunitive-lanette.ngrok-free.dev'],
+  },
 })

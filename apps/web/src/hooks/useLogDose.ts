@@ -51,6 +51,7 @@ export function useLogDose() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['home', userId] })
+      queryClient.invalidateQueries({ queryKey: ['decay', userId] })
     },
   })
 }

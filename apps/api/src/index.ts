@@ -6,6 +6,7 @@ import doses from './routes/doses.js'
 import protocols from './routes/protocols.js'
 import peptides from './routes/peptides.js'
 import vials from './routes/vials.js'
+import photos from './routes/photos.js'
 
 const app = new Hono()
 
@@ -23,6 +24,7 @@ app.route('/doses', doses)
 app.route('/protocols', protocols)
 app.route('/peptides', peptides)
 app.route('/vials', vials)
+app.route('/photos', photos)
 
 const port = Number(process.env.PORT ?? 3001)
 

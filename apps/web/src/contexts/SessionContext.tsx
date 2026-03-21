@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
+const PREVIEW_MODE = import.meta.env.VITE_PREVIEW_MODE === 'true'
+
 interface SessionContextValue {
   session: Session | null
   loading: boolean
@@ -14,9 +16,11 @@ const SessionContext = createContext<SessionContextValue>({
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!PREVIEW_MODE)
 
   useEffect(() => {
+    if (PREVIEW_MODE) return
+
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
       setLoading(false)

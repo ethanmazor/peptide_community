@@ -6,6 +6,8 @@ import { useCreateVial } from '../hooks/useCreateVial'
 interface LocationState {
   protocolId: string
   protocolPeptides: Array<ProtocolPeptide & { peptide: Peptide }>
+  prefilledVialMg?: string
+  prefilledBacMl?: string
 }
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
@@ -25,8 +27,8 @@ export default function VialSetup() {
   const peptides = state?.protocolPeptides ?? []
   const [currentIdx, setCurrentIdx] = useState(0)
 
-  const [vialMg, setVialMg] = useState('')
-  const [bacMl, setBacMl] = useState('')
+  const [vialMg, setVialMg] = useState(state?.prefilledVialMg ?? '')
+  const [bacMl, setBacMl] = useState(state?.prefilledBacMl ?? '')
   const [vendorName, setVendorName] = useState('')
   const [vendorUrl, setVendorUrl] = useState('')
   const [reconstitutedAt, setReconstitutedAt] = useState(

@@ -1,6 +1,10 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useHomeData } from '../hooks/useHomeData'
 
 export default function Calculator() {
+  const navigate = useNavigate()
+  const { data: homeData } = useHomeData()
   const [vialMg, setVialMg] = useState('')
   const [bacMl, setBacMl] = useState('')
   const [targetMcg, setTargetMcg] = useState('')
@@ -8,6 +12,9 @@ export default function Calculator() {
   const vialMgNum = parseFloat(vialMg)
   const bacMlNum = parseFloat(bacMl)
   const targetMcgNum = parseFloat(targetMcg)
+
+  const activeProtocol = homeData?.protocol ?? null
+  const protocolPeptides = homeData?.items ?? []
 
   const concPerMl =
     vialMgNum > 0 && bacMlNum > 0 ? (vialMgNum * 1000) / bacMlNum : null
@@ -112,6 +119,28 @@ export default function Calculator() {
             {unitsToDraw !== null ? unitsToDraw.toFixed(2) : '—'}
           </span>
         </div>
+
+        {/* Save to vial */}
+        {concPerUnit !== null && activeProtocol && (
+          <button
+            onClick={() =>
+              navigate('/vial-setup', {
+                state: {
+                  protocolId: activeProtocol.id,
+                  protocolPeptides: protocolPeptides.map((item) => ({
+                    ...item,
+                    peptide: item.peptide,
+                  })),
+                  prefilledVialMg: vialMg,
+                  prefilledBacMl: bacMl,
+                },
+              })
+            }
+            className="w-full h-11 border border-teal text-teal text-[14px] font-medium rounded-lg"
+          >
+            Save to vial
+          </button>
+        )}
       </div>
     </div>
   )

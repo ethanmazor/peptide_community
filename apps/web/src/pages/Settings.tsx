@@ -226,6 +226,122 @@ function PeptideLibrarySection() {
   )
 }
 
+function NotificationsSection() {
+  const { data: profile, isLoading } = useProfile()
+  const updateProfile = useUpdateProfile()
+  const [editingTime, setEditingTime] = useState(false)
+  const [editingLead, setEditingLead] = useState(false)
+  const [time, setTime] = useState('')
+  const [lead, setLead] = useState('')
+
+  if (isLoading) return null
+
+  // notification_time stored as "HH:MM:SS", input needs "HH:MM"
+  const displayTime = profile?.notification_time
+    ? profile.notification_time.slice(0, 5)
+    : 'Not set'
+  const displayLead = profile?.reminder_lead_min ?? 15
+
+  async function saveTime() {
+    await updateProfile.mutateAsync({ notification_time: time ? `${time}:00` : null })
+    setEditingTime(false)
+  }
+
+  async function saveLead() {
+    const val = parseInt(lead, 10)
+    if (!isNaN(val) && val >= 0) {
+      await updateProfile.mutateAsync({ reminder_lead_min: val })
+    }
+    setEditingLead(false)
+  }
+
+  return (
+    <div>
+      {editingTime ? (
+        <div className="px-4 py-3 border-b border-[var(--color-border-tertiary)]" style={{ borderBottomWidth: '0.5px' }}>
+          <label className="text-[10px] font-medium uppercase tracking-widest text-[var(--color-text-secondary)] block mb-1">
+            Reminder time
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              autoFocus
+              className="flex-1 h-10 px-3 text-[14px] bg-[var(--color-background-secondary)] border border-teal rounded-lg focus:outline-none"
+              style={{ color: 'var(--color-text-primary)' }}
+            />
+            <button
+              onClick={saveTime}
+              disabled={updateProfile.isPending}
+              className="h-10 px-4 bg-teal text-white text-[13px] font-medium rounded-lg disabled:opacity-60"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setEditingTime(false)}
+              className="h-10 px-3 text-[13px] text-[var(--color-text-secondary)] rounded-lg"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <SettingsRow
+          label="Reminder time"
+          value={displayTime}
+          onPress={() => {
+            setTime(profile?.notification_time?.slice(0, 5) ?? '')
+            setEditingTime(true)
+          }}
+        />
+      )}
+
+      {editingLead ? (
+        <div className="px-4 py-3 border-b border-[var(--color-border-tertiary)]" style={{ borderBottomWidth: '0.5px' }}>
+          <label className="text-[10px] font-medium uppercase tracking-widest text-[var(--color-text-secondary)] block mb-1">
+            Remind me (minutes before dose)
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              inputMode="numeric"
+              value={lead}
+              onChange={(e) => setLead(e.target.value)}
+              autoFocus
+              placeholder="15"
+              className="flex-1 h-10 px-3 text-[14px] bg-[var(--color-background-secondary)] border border-teal rounded-lg focus:outline-none"
+              style={{ color: 'var(--color-text-primary)' }}
+            />
+            <button
+              onClick={saveLead}
+              disabled={updateProfile.isPending}
+              className="h-10 px-4 bg-teal text-white text-[13px] font-medium rounded-lg disabled:opacity-60"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setEditingLead(false)}
+              className="h-10 px-3 text-[13px] text-[var(--color-text-secondary)] rounded-lg"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <SettingsRow
+          label="Remind me before dose"
+          value={`${displayLead} min`}
+          onPress={() => {
+            setLead(String(displayLead))
+            setEditingLead(true)
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
 function ProtocolSection() {
   const { data } = useHomeData()
   const protocol = data?.protocol
@@ -272,6 +388,9 @@ export default function Settings() {
 
       <SectionHeader title="Profile" />
       <ProfileSection />
+
+      <SectionHeader title="Notifications" />
+      <NotificationsSection />
 
       <SectionHeader title="Peptide library" />
       <PeptideLibrarySection />

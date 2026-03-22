@@ -4,7 +4,7 @@ import { ChevronRight, Plus, LogOut } from 'lucide-react'
 import { useSession } from '../contexts/SessionContext'
 import { supabase } from '../lib/supabase'
 import { useProfile, useUpdateProfile } from '../hooks/useSettings'
-import { usePeptides, useCreatePeptide } from '../hooks/usePeptides'
+import { usePeptides, useCreatePeptide, useUpdatePeptide } from '../hooks/usePeptides'
 import { useHomeData } from '../hooks/useHomeData'
 import type { Peptide } from '@peptide/types'
 
@@ -120,6 +120,153 @@ function ProfileSection() {
   )
 }
 
+const TYPICAL_FREQUENCIES = [
+  'Once daily',
+  'Twice daily',
+  'Three times daily',
+  'Every other day',
+  'Every 3 days',
+  'Weekly',
+  'Twice weekly',
+  'Custom',
+]
+
+function PeptideEditRow({ peptide }: { peptide: Peptide }) {
+  const updatePeptide = useUpdatePeptide()
+  const [editing, setEditing] = useState(false)
+  const [name, setName] = useState(peptide.name)
+  const [alias, setAlias] = useState(peptide.alias ?? '')
+  const [description, setDescription] = useState(peptide.description ?? '')
+  const [dose, setDose] = useState(peptide.typical_dose_mcg ? String(peptide.typical_dose_mcg) : '')
+  const [frequency, setFrequency] = useState(peptide.typical_frequency ?? '')
+  const [halfLife, setHalfLife] = useState(peptide.half_life_hours ? String(peptide.half_life_hours) : '')
+
+  function startEdit() {
+    setName(peptide.name)
+    setAlias(peptide.alias ?? '')
+    setDescription(peptide.description ?? '')
+    setDose(peptide.typical_dose_mcg ? String(peptide.typical_dose_mcg) : '')
+    setFrequency(peptide.typical_frequency ?? '')
+    setHalfLife(peptide.half_life_hours ? String(peptide.half_life_hours) : '')
+    setEditing(true)
+  }
+
+  async function handleSave() {
+    await updatePeptide.mutateAsync({
+      id: peptide.id,
+      name: name.trim() || peptide.name,
+      alias: alias.trim() || null,
+      description: description.trim() || null,
+      typical_dose_mcg: dose ? Number(dose) : null,
+      typical_frequency: frequency || null,
+      half_life_hours: halfLife ? Number(halfLife) : null,
+    })
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <div className="px-4 py-3 border-b border-[var(--color-border-tertiary)] flex flex-col gap-2" style={{ borderBottomWidth: '0.5px' }}>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Name"
+            autoFocus
+            className="flex-1 h-10 px-3 text-[14px] bg-[var(--color-background-secondary)] border border-teal rounded-lg focus:outline-none"
+            style={{ color: 'var(--color-text-primary)' }}
+          />
+          <input
+            type="text"
+            value={alias}
+            onChange={(e) => setAlias(e.target.value)}
+            placeholder="Alias"
+            className="w-24 h-10 px-3 text-[14px] bg-[var(--color-background-secondary)] border border-[var(--color-border-tertiary)] rounded-lg focus:outline-none focus:border-teal"
+            style={{ color: 'var(--color-text-primary)' }}
+          />
+        </div>
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Description (optional)"
+          className="h-10 px-3 text-[14px] bg-[var(--color-background-secondary)] border border-[var(--color-border-tertiary)] rounded-lg focus:outline-none focus:border-teal"
+          style={{ color: 'var(--color-text-primary)' }}
+        />
+        <div className="flex gap-2">
+          <input
+            type="number"
+            inputMode="decimal"
+            value={dose}
+            onChange={(e) => setDose(e.target.value)}
+            placeholder="Typical dose (mcg)"
+            className="flex-1 h-10 px-3 text-[14px] bg-[var(--color-background-secondary)] border border-[var(--color-border-tertiary)] rounded-lg focus:outline-none focus:border-teal"
+            style={{ color: 'var(--color-text-primary)' }}
+          />
+          <input
+            type="number"
+            inputMode="decimal"
+            value={halfLife}
+            onChange={(e) => setHalfLife(e.target.value)}
+            placeholder="Half-life (hr)"
+            className="flex-1 h-10 px-3 text-[14px] bg-[var(--color-background-secondary)] border border-[var(--color-border-tertiary)] rounded-lg focus:outline-none focus:border-teal"
+            style={{ color: 'var(--color-text-primary)' }}
+          />
+        </div>
+        <select
+          value={frequency}
+          onChange={(e) => setFrequency(e.target.value)}
+          className="h-10 px-3 text-[14px] bg-[var(--color-background-secondary)] border border-[var(--color-border-tertiary)] rounded-lg focus:outline-none focus:border-teal"
+          style={{ color: frequency ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }}
+        >
+          <option value="">Frequency (optional)</option>
+          {TYPICAL_FREQUENCIES.map((f) => (
+            <option key={f} value={f}>{f}</option>
+          ))}
+        </select>
+        <div className="flex gap-2">
+          <button
+            onClick={handleSave}
+            disabled={!name.trim() || updatePeptide.isPending}
+            className="flex-1 h-10 bg-teal text-white text-[13px] font-medium rounded-lg disabled:opacity-60"
+          >
+            Save
+          </button>
+          <button
+            onClick={() => setEditing(false)}
+            className="flex-1 h-10 text-[13px] text-[var(--color-text-secondary)] bg-[var(--color-background-secondary)] rounded-lg"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <button
+      onClick={startEdit}
+      className="w-full flex items-center justify-between px-4 py-3 border-b border-[var(--color-border-tertiary)] text-left"
+      style={{ borderBottomWidth: '0.5px' }}
+    >
+      <div>
+        <p className="text-[14px] text-[var(--color-text-primary)]">{peptide.name}</p>
+        {peptide.typical_dose_mcg && (
+          <p className="text-[11px] text-[var(--color-text-tertiary)]">
+            {peptide.typical_dose_mcg} mcg · {peptide.typical_frequency ?? ''}
+          </p>
+        )}
+      </div>
+      {peptide.is_default && (
+        <span className="text-[10px] text-[var(--color-text-tertiary)] bg-[var(--color-background-secondary)] px-2 py-0.5 rounded-full shrink-0">
+          Default
+        </span>
+      )}
+    </button>
+  )
+}
+
 function PeptideLibrarySection() {
   const { data: peptides, isLoading } = usePeptides()
   const createPeptide = useCreatePeptide()
@@ -146,25 +293,7 @@ function PeptideLibrarySection() {
   return (
     <div>
       {(peptides ?? []).map((p: Peptide) => (
-        <div
-          key={p.id}
-          className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border-tertiary)]"
-          style={{ borderBottomWidth: '0.5px' }}
-        >
-          <div>
-            <p className="text-[14px] text-[var(--color-text-primary)]">{p.name}</p>
-            {p.typical_dose_mcg && (
-              <p className="text-[11px] text-[var(--color-text-tertiary)]">
-                {p.typical_dose_mcg} mcg · {p.typical_frequency ?? ''}
-              </p>
-            )}
-          </div>
-          {p.is_default && (
-            <span className="text-[10px] text-[var(--color-text-tertiary)] bg-[var(--color-background-secondary)] px-2 py-0.5 rounded-full">
-              Default
-            </span>
-          )}
-        </div>
+        <PeptideEditRow key={p.id} peptide={p} />
       ))}
 
       {showAdd ? (
@@ -359,6 +488,9 @@ function ProtocolSection() {
               Active · Started {new Date(protocol.start_date ?? protocol.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
             </p>
           </div>
+          <Link to={`/settings/protocols/${protocol.id}/edit`}>
+            <SettingsRow label="Edit protocol" />
+          </Link>
           <Link to="/settings/protocols/new">
             <SettingsRow label="New protocol" />
           </Link>

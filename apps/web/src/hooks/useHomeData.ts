@@ -28,6 +28,9 @@ const MOCK_DATA: HomeData = {
       dose_mcg: 250,
       frequency: 'twice daily',
       notes: null,
+      cycle_length_days: null,
+      scheduled_days: null,
+      scheduled_time: null,
       peptide: {
         id: 'mock-peptide-1',
         created_by_user_id: null,
@@ -64,6 +67,9 @@ const MOCK_DATA: HomeData = {
       dose_mcg: 2500,
       frequency: 'twice weekly',
       notes: null,
+      cycle_length_days: null,
+      scheduled_days: null,
+      scheduled_time: null,
       peptide: {
         id: 'mock-peptide-2',
         created_by_user_id: null,
@@ -112,6 +118,9 @@ const MOCK_DATA: HomeData = {
       dose_mcg: 200,
       frequency: 'three times daily',
       notes: null,
+      cycle_length_days: null,
+      scheduled_days: null,
+      scheduled_time: null,
       peptide: {
         id: 'mock-peptide-3',
         created_by_user_id: null,
@@ -167,8 +176,14 @@ async function fetchHomeData(userId: string): Promise<HomeData> {
 
   if (ppError) throw ppError
 
+  // Filter to peptides scheduled for today
+  const todayDow = new Date().getDay()
+  const dueToday = (ppRows ?? []).filter(
+    (pp) => !pp.scheduled_days || (pp.scheduled_days as number[]).includes(todayDow)
+  )
+
   const items: HomeProtocolPeptide[] = await Promise.all(
-    (ppRows ?? []).map(async (pp) => {
+    dueToday.map(async (pp) => {
       // Active vial
       const { data: vials } = await supabase
         .from('vials')

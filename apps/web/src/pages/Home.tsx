@@ -1,14 +1,16 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useHomeData } from '../hooks/useHomeData'
 import CycleProgressBar from '../components/CycleProgressBar'
 import DoseCard from '../components/DoseCard'
 import LogDoseSheet from '../components/LogDoseSheet'
 import FAB from '../components/FAB'
 import ActiveInSystemSection from '../components/ActiveInSystemSection'
+import { getPeptideCycleProgress } from '../lib/cycleUtils'
 import type { HomeProtocolPeptide } from '../hooks/useHomeData'
 
 export default function Home() {
+  const navigate = useNavigate()
   const { data, isLoading, error } = useHomeData()
   const [sheetItem, setSheetItem] = useState<HomeProtocolPeptide | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -19,10 +21,20 @@ export default function Home() {
   }
 
   function openFABSheet() {
-    // FAB opens sheet in off-schedule mode — use first unlogged item or null
+    // Use first unlogged item, or first item if all are logged (off-schedule extra dose)
     const unlogged = data?.items.find((i) => i.todays_logs.length === 0)
-    setSheetItem(unlogged ?? null)
+    const target = unlogged ?? data?.items[0] ?? null
+    setSheetItem(target)
     setSheetOpen(true)
+  }
+
+  function handleDepleted(item: HomeProtocolPeptide) {
+    navigate('/vial-setup', {
+      state: {
+        protocolId: item.protocol_id,
+        protocolPeptides: [{ ...item, peptide: item.peptide }],
+      },
+    })
   }
 
   if (isLoading) {
@@ -82,7 +94,12 @@ export default function Home() {
           </p>
         ) : (
           items.map((item) => (
-            <DoseCard key={item.id} item={item} onLog={openSheet} />
+            <DoseCard
+              key={item.id}
+              item={item}
+              onLog={openSheet}
+              peptideCycle={getPeptideCycleProgress(item, protocol)}
+            />
           ))
         )}
       </div>
@@ -93,6 +110,7 @@ export default function Home() {
         item={sheetItem}
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
+        onDepleted={handleDepleted}
       />
     </div>
   )

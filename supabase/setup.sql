@@ -44,12 +44,16 @@ create table public.protocols (
 );
 
 create table public.protocol_peptides (
-  id           uuid primary key default gen_random_uuid(),
-  protocol_id  uuid not null references public.protocols(id) on delete cascade,
-  peptide_id   uuid not null references public.peptides(id),
-  dose_mcg     numeric not null,
-  frequency    text not null,
-  notes        text
+  id                 uuid primary key default gen_random_uuid(),
+  protocol_id        uuid not null references public.protocols(id) on delete cascade,
+  peptide_id         uuid not null references public.peptides(id),
+  dose_mcg           numeric not null,
+  frequency          text not null,
+  notes              text,
+  cycle_length_days  integer,
+  scheduled_days     integer[],       -- JS getDay() values (0=Sun–6=Sat); NULL = every day
+  scheduled_time     time,            -- UTC reminder time override; NULL = use profile default
+  dose_phases        jsonb            -- [{start_week, end_week, dose_mcg}]; NULL = single fixed dose
 );
 
 create table public.vials (
@@ -284,9 +288,26 @@ insert into public.peptides (name, alias, typical_dose_mcg, typical_frequency, h
   ('PT-141',      'PT141',      1000, 'as needed',       2.5,  true);
 
 -- ─────────────────────────────────────────────
--- 6. pg_cron — reminder job placeholder
--- NOTE: Requires pg_cron extension enabled in Supabase dashboard.
--- Replace <YOUR_EDGE_FUNCTION_URL> and <YOUR_SERVICE_ROLE_KEY> before running.
+-- 6. Migrations (run these if you already ran setup.sql before these columns existed)
+-- ─────────────────────────────────────────────
+
+/*
+ALTER TABLE public.protocol_peptides
+  ADD COLUMN IF NOT EXISTS cycle_length_days integer,
+  ADD COLUMN IF NOT EXISTS scheduled_days    integer[],
+  ADD COLUMN IF NOT EXISTS scheduled_time    time,
+  ADD COLUMN IF NOT EXISTS dose_phases       jsonb;
+*/
+
+-- ─────────────────────────────────────────────
+-- 7. pg_cron — email reminder job
+-- Prerequisites:
+--   1. Enable pg_cron extension in Supabase dashboard (Database → Extensions)
+--   2. Enable pg_net extension (Database → Extensions)
+--   3. Deploy the Edge Function: supabase functions deploy send-reminders
+--   4. Set RESEND_API_KEY secret: supabase secrets set RESEND_API_KEY=<key>
+--   5. Set APP_URL secret: supabase secrets set APP_URL=https://your-app.vercel.app
+--   6. Replace <YOUR_PROJECT_REF> and <YOUR_SERVICE_ROLE_KEY> below, then uncomment and run.
 -- ─────────────────────────────────────────────
 
 /*
@@ -295,7 +316,7 @@ select cron.schedule(
   '* * * * *',  -- every minute; Edge Function filters by notification_time
   $$
   select net.http_post(
-    url := '<YOUR_EDGE_FUNCTION_URL>/send-reminders',
+    url := 'https://<YOUR_PROJECT_REF>.supabase.co/functions/v1/send-reminders',
     headers := '{"Authorization": "Bearer <YOUR_SERVICE_ROLE_KEY>", "Content-Type": "application/json"}'::jsonb,
     body := '{}'::jsonb
   );

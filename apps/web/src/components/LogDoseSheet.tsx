@@ -17,9 +17,10 @@ interface Props {
   item: HomeProtocolPeptide | null
   open: boolean
   onClose: () => void
+  onDepleted?: (item: HomeProtocolPeptide) => void
 }
 
-export default function LogDoseSheet({ item, open, onClose }: Props) {
+export default function LogDoseSheet({ item, open, onClose, onDepleted }: Props) {
   const logDose = useLogDose()
 
   const [injectionSite, setInjectionSite] = useState('')
@@ -71,7 +72,12 @@ export default function LogDoseSheet({ item, open, onClose }: Props) {
       body_fat_pct: bodyFat ? Number(bodyFat) : null,
     })
 
-    onClose()
+    if (isDepletingVial && onDepleted) {
+      onClose()
+      onDepleted(item)
+    } else {
+      onClose()
+    }
   }
 
   return (
@@ -79,9 +85,10 @@ export default function LogDoseSheet({ item, open, onClose }: Props) {
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
         <Drawer.Content
-          className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-50 flex flex-col rounded-t-xl bg-[var(--color-background-primary)] focus:outline-none"
+          className="fixed inset-x-0 bottom-0 z-50 flex justify-center focus:outline-none"
           style={{ height: '95dvh' }}
         >
+          <div className="w-full max-w-[480px] flex flex-col rounded-t-xl bg-[var(--color-background-primary)] overflow-hidden">
           {/* Handle */}
           <div className="flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-8 h-[3px] rounded-full bg-[var(--color-border-secondary)]" />
@@ -180,7 +187,7 @@ export default function LogDoseSheet({ item, open, onClose }: Props) {
                     color: 'var(--color-text-warning)',
                   }}
                 >
-                  This dose will deplete your vial. Consider reconstituting a new one.
+                  This will finish your vial. You'll be prompted to set up a new one after saving.
                 </div>
               )}
 
@@ -247,6 +254,7 @@ export default function LogDoseSheet({ item, open, onClose }: Props) {
             >
               {logDose.isPending ? 'Saving…' : 'Save dose'}
             </button>
+          </div>
           </div>
         </Drawer.Content>
       </Drawer.Portal>

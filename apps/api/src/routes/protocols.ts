@@ -58,7 +58,16 @@ protocols.post('/', async (c) => {
     notes?: string | null
     start_date?: string | null
     end_date?: string | null
-    peptides: Array<{ peptide_id: string; dose_mcg: number; frequency: string; notes?: string | null }>
+    peptides: Array<{
+      peptide_id: string
+      dose_mcg: number
+      frequency: string
+      notes?: string | null
+      cycle_length_days?: number | null
+      scheduled_days?: number[] | null
+      scheduled_time?: string | null
+      dose_phases?: Array<{ start_week: number; end_week: number | null; dose_mcg: number }> | null
+    }>
   }>()
 
   // Deactivate any currently active protocol
@@ -93,6 +102,10 @@ protocols.post('/', async (c) => {
         dose_mcg: p.dose_mcg,
         frequency: p.frequency,
         notes: p.notes ?? null,
+        cycle_length_days: p.cycle_length_days ?? null,
+        scheduled_days: p.scheduled_days ?? null,
+        scheduled_time: p.scheduled_time ?? null,
+        dose_phases: p.dose_phases ?? null,
       }))
     )
     if (ppError) return c.json({ error: ppError.message }, 400)
@@ -105,6 +118,58 @@ protocols.post('/', async (c) => {
     .eq('protocol_id', protocol.id)
 
   return c.json({ ...protocol, protocol_peptides: ppRows ?? [] }, 201)
+})
+
+// Add a peptide to an existing protocol
+protocols.post('/:id/peptides', async (c) => {
+  const jwt = c.get('jwt')
+  const supabase = createUserClient(jwt)
+  const protocolId = c.req.param('id')
+
+  const body = await c.req.json<{
+    peptide_id: string
+    dose_mcg: number
+    frequency: string
+    notes?: string | null
+    cycle_length_days?: number | null
+    scheduled_days?: number[] | null
+    scheduled_time?: string | null
+    dose_phases?: Array<{ start_week: number; end_week: number | null; dose_mcg: number }> | null
+  }>()
+
+  const { data, error } = await supabase
+    .from('protocol_peptides')
+    .insert({
+      protocol_id: protocolId,
+      peptide_id: body.peptide_id,
+      dose_mcg: body.dose_mcg,
+      frequency: body.frequency,
+      notes: body.notes ?? null,
+      cycle_length_days: body.cycle_length_days ?? null,
+      scheduled_days: body.scheduled_days ?? null,
+      scheduled_time: body.scheduled_time ?? null,
+      dose_phases: body.dose_phases ?? null,
+    })
+    .select('*, peptide:peptides(*)')
+    .single()
+
+  if (error) return c.json({ error: error.message }, 400)
+  return c.json(data, 201)
+})
+
+// Remove a peptide from a protocol
+protocols.delete('/:id/peptides/:ppId', async (c) => {
+  const jwt = c.get('jwt')
+  const supabase = createUserClient(jwt)
+  const ppId = c.req.param('ppId')
+
+  const { error } = await supabase
+    .from('protocol_peptides')
+    .delete()
+    .eq('id', ppId)
+
+  if (error) return c.json({ error: error.message }, 400)
+  return c.json({ success: true })
 })
 
 // Update protocol (status, name, etc.)

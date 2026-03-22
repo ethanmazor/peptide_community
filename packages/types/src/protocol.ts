@@ -25,6 +25,12 @@ export interface Protocol {
   created_at: string
 }
 
+export interface DosePhase {
+  start_week: number        // 1-indexed week number from protocol start
+  end_week: number | null   // null = open-ended (runs to protocol end or next phase)
+  dose_mcg: number
+}
+
 export interface ProtocolPeptide {
   id: string
   protocol_id: string
@@ -32,6 +38,10 @@ export interface ProtocolPeptide {
   dose_mcg: number
   frequency: string
   notes: string | null
+  cycle_length_days: number | null
+  scheduled_days: number[] | null   // JS getDay() values (0=Sun–6=Sat); null = every day
+  scheduled_time: string | null     // "HH:MM:SS" UTC; null = use user default
+  dose_phases: DosePhase[] | null   // null = single fixed dose; array = escalation schedule
   // joined fields
   peptide?: Peptide
   protocol?: Protocol

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useHomeData } from '../hooks/useHomeData'
+import SyringeVisual from '../components/SyringeVisual'
 
 export default function Calculator() {
   const navigate = useNavigate()
@@ -8,6 +9,7 @@ export default function Calculator() {
   const [vialMg, setVialMg] = useState('')
   const [bacMl, setBacMl] = useState('')
   const [targetMcg, setTargetMcg] = useState('')
+  const [syringeSize, setSyringeSize] = useState<30 | 50 | 100>(100)
 
   const vialMgNum = parseFloat(vialMg)
   const bacMlNum = parseFloat(bacMl)
@@ -82,11 +84,27 @@ export default function Calculator() {
           </div>
         </div>
 
-        {concPerUnit !== null && (
-          <p className="text-[11px] text-[var(--color-text-tertiary)] -mt-2">
-            Assumes 100-unit insulin syringe (1 mL)
-          </p>
-        )}
+        {/* Syringe size selector */}
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] font-medium uppercase tracking-widest text-[var(--color-text-secondary)]">
+            Syringe size
+          </label>
+          <div className="flex rounded-lg overflow-hidden border border-[var(--color-border-tertiary)]">
+            {([30, 50, 100] as const).map((size) => (
+              <button
+                key={size}
+                onClick={() => setSyringeSize(size)}
+                className={`flex-1 h-9 text-[13px] font-medium transition-colors ${
+                  syringeSize === size
+                    ? 'bg-teal text-white'
+                    : 'bg-[var(--color-background-secondary)] text-[var(--color-text-secondary)]'
+                }`}
+              >
+                {size}u
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Divider */}
         <div className="border-t border-[var(--color-border-tertiary)] my-1" />
@@ -119,6 +137,15 @@ export default function Calculator() {
             {unitsToDraw !== null ? unitsToDraw.toFixed(2) : '—'}
           </span>
         </div>
+
+        {/* Syringe visual */}
+        {unitsToDraw !== null && (
+          <SyringeVisual
+            syringeSize={syringeSize}
+            unitsToDraw={unitsToDraw}
+            doseMcg={targetMcgNum > 0 ? targetMcgNum : null}
+          />
+        )}
 
         {/* Save to vial */}
         {concPerUnit !== null && activeProtocol && (

@@ -5,9 +5,9 @@ import AuthCallback from './pages/AuthCallback'
 import ProtectedLayout from './components/ProtectedLayout'
 import TabLayout from './layouts/TabLayout'
 import Home from './pages/Home'
-import History from './pages/History'
+import Progress from './pages/Progress'
 import Calculator from './pages/Calculator'
-import Photos from './pages/Photos'
+import PeptideDatabase from './pages/PeptideDatabase'
 import Settings from './pages/Settings'
 import ProtocolBuilder from './pages/ProtocolBuilder'
 import VialSetup from './pages/VialSetup'
@@ -30,14 +30,18 @@ function App() {
       <Route element={<ProtectedLayout />}>
         {/* Full-screen flows outside the tab bar */}
         <Route path="settings/protocols/new" element={<ProtocolBuilder />} />
+        <Route path="settings/protocols/:id/edit" element={<ProtocolBuilder />} />
         <Route path="vial-setup" element={<VialSetup />} />
 
         <Route element={<TabLayout />}>
           <Route index element={<Home />} />
-          <Route path="history" element={<History />} />
+          <Route path="progress" element={<Progress />} />
           <Route path="calc" element={<Calculator />} />
-          <Route path="photos" element={<Photos />} />
+          <Route path="peptides" element={<PeptideDatabase />} />
           <Route path="settings" element={<Settings />} />
+          {/* Redirects for old routes */}
+          <Route path="history" element={<Navigate to="/progress" replace />} />
+          <Route path="photos" element={<Navigate to="/progress?section=photos" replace />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

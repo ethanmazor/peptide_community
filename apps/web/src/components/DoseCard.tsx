@@ -1,4 +1,5 @@
 import type { HomeProtocolPeptide } from '../hooks/useHomeData'
+import type { PeptideCycleProgress } from '../lib/cycleUtils'
 
 type DoseState = 'due' | 'logged' | 'upcoming'
 
@@ -14,9 +15,10 @@ function formatTime(iso: string) {
 interface Props {
   item: HomeProtocolPeptide
   onLog: (item: HomeProtocolPeptide) => void
+  peptideCycle?: PeptideCycleProgress | null
 }
 
-export default function DoseCard({ item, onLog }: Props) {
+export default function DoseCard({ item, onLog, peptideCycle }: Props) {
   const state = getDoseState(item)
 
   const borderStyle =
@@ -59,6 +61,19 @@ export default function DoseCard({ item, onLog }: Props) {
               <> · {item.active_vial.concentration_mcg_per_unit.toFixed(1)} mcg/unit</>
             )}
           </p>
+          {peptideCycle && (
+            <div className="mt-1.5">
+              <p className="text-[11px] text-[var(--color-text-tertiary)] mb-0.5">
+                Day {peptideCycle.day} / {peptideCycle.total}
+              </p>
+              <div className="h-1 w-24 rounded-full bg-[var(--color-background-secondary)] overflow-hidden">
+                <div
+                  className="h-full bg-teal/50 rounded-full"
+                  style={{ width: `${Math.min(peptideCycle.pct * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
         <div className="shrink-0 pt-0.5">{pill}</div>
       </div>

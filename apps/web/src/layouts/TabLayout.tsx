@@ -1,11 +1,11 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { Home, ClipboardList, Calculator, Camera, Settings } from 'lucide-react'
+import { Home, TrendingUp, Calculator, FlaskConical, Settings } from 'lucide-react'
 
 const tabs = [
   { to: '/', label: 'Home', Icon: Home, end: true },
-  { to: '/history', label: 'History', Icon: ClipboardList },
+  { to: '/progress', label: 'Progress', Icon: TrendingUp },
   { to: '/calc', label: 'Calc', Icon: Calculator },
-  { to: '/photos', label: 'Photos', Icon: Camera },
+  { to: '/peptides', label: 'Peptides', Icon: FlaskConical },
   { to: '/settings', label: 'Settings', Icon: Settings },
 ]
 

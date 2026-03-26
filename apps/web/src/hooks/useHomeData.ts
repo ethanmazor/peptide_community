@@ -31,6 +31,7 @@ const MOCK_DATA: HomeData = {
       cycle_length_days: null,
       scheduled_days: null,
       scheduled_time: null,
+      dose_phases: null,
       peptide: {
         id: 'mock-peptide-1',
         created_by_user_id: null,
@@ -70,6 +71,7 @@ const MOCK_DATA: HomeData = {
       cycle_length_days: null,
       scheduled_days: null,
       scheduled_time: null,
+      dose_phases: null,
       peptide: {
         id: 'mock-peptide-2',
         created_by_user_id: null,
@@ -121,6 +123,7 @@ const MOCK_DATA: HomeData = {
       cycle_length_days: null,
       scheduled_days: null,
       scheduled_time: null,
+      dose_phases: null,
       peptide: {
         id: 'mock-peptide-3',
         created_by_user_id: null,

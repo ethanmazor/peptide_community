@@ -5,3 +5,13 @@ dist
 .env.local
 .env.*.local
 *.env
+
+# Terminal Paste Image folder
+.cp-images/
+
+# Capacitor native build artifacts
+apps/web/ios/App/Pods/
+apps/web/ios/App/.build/
+apps/web/android/.gradle/
+apps/web/android/build/
+apps/web/android/app/build/

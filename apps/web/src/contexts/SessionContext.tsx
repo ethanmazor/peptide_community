@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import { App } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
 import { supabase } from '../lib/supabase'
 
 const PREVIEW_MODE = import.meta.env.VITE_PREVIEW_MODE === 'true'
@@ -30,7 +32,28 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
     })
 
-    return () => listener.subscription.unsubscribe()
+    // On native, listen for deep links that carry Supabase auth tokens.
+    // Email confirmation links and OAuth redirects arrive as:
+    //   peptidetracker://auth/callback?code=XXXX  (PKCE)
+    let cleanup: (() => void) | undefined
+    if (Capacitor.isNativePlatform()) {
+      App.addListener('appUrlOpen', ({ url }) => {
+        if (url.startsWith('peptidetracker://')) {
+          // Extract the query string from the deep link URL
+          const queryString = url.split('?')[1] ?? ''
+          if (queryString) {
+            supabase.auth.exchangeCodeForSession(queryString).catch(console.error)
+          }
+        }
+      }).then((handle) => {
+        cleanup = () => handle.remove()
+      })
+    }
+
+    return () => {
+      listener.subscription.unsubscribe()
+      cleanup?.()
+    }
   }, [])
 
   return (

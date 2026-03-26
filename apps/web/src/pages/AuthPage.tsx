@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Capacitor } from '@capacitor/core'
 import { supabase } from '../lib/supabase'
 
 type Tab = 'signin' | 'signup'
@@ -39,11 +40,13 @@ export default function AuthPage() {
 
   async function handleGoogle() {
     setError(null)
+    // On native, redirect back via the registered URL scheme so the app receives the token
+    const redirectTo = Capacitor.isNativePlatform()
+      ? 'peptidetracker://auth/callback'
+      : `${window.location.origin}/auth/callback`
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo },
     })
     if (error) setError(error.message)
   }

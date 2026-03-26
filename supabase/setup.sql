@@ -273,6 +273,8 @@ create policy "storage: users can delete own photos"
 
 -- ─────────────────────────────────────────────
 -- 5. SEED — default peptides
+-- NOTE: Only run this section once. Running it again creates duplicates.
+-- To re-seed safely, first run: delete from public.peptides where is_default = true;
 -- ─────────────────────────────────────────────
 
 insert into public.peptides (name, alias, typical_dose_mcg, typical_frequency, half_life_hours, is_default) values

@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Camera, Plus, X, ChevronLeft } from 'lucide-react'
+import { Camera as CapCamera, CameraResultType, CameraSource } from '@capacitor/camera'
+import { isNative } from '../lib/platform'
 import {
   BarChart, Bar, Cell,
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -10,7 +12,6 @@ import {
   usePhotos,
   useRecentDoseLogs,
   useUploadPhoto,
-  useGetPhotoUrl,
   type PhotoEntry,
   type RecentDoseLog,
 } from '../hooks/usePhotos'
@@ -447,7 +448,6 @@ function PhotosSection() {
   const { data: photos, isLoading, error } = usePhotos()
   const { data: recentLogs } = useRecentDoseLogs()
   const uploadPhoto = useUploadPhoto()
-  const getPublicUrl = useGetPhotoUrl()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
@@ -462,8 +462,30 @@ function PhotosSection() {
     e.target.value = ''
   }
 
+  async function handleAddPhoto() {
+    if (isNative) {
+      // Use native camera/gallery picker on iOS & Android
+      const image = await CapCamera.getPhoto({
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Prompt,
+        quality: 85,
+        allowEditing: false,
+        width: 1200,
+      })
+      if (!image.webPath) return
+      const res = await fetch(image.webPath)
+      const blob = await res.blob()
+      const ext = image.format ?? 'jpeg'
+      const file = new File([blob], `photo.${ext}`, { type: `image/${ext}` })
+      setPendingFile(file)
+      setPreviewUrl(image.webPath)
+    } else {
+      fileInputRef.current?.click()
+    }
+  }
+
   function handleCloseUpload() {
-    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    if (previewUrl && !isNative) URL.revokeObjectURL(previewUrl)
     setPendingFile(null)
     setPreviewUrl(null)
   }
@@ -480,7 +502,7 @@ function PhotosSection() {
     <div>
       <div className="px-4 pb-3 flex justify-end">
         <button
-          onClick={() => fileInputRef.current?.click()}
+          onClick={handleAddPhoto}
           className="w-9 h-9 flex items-center justify-center rounded-full bg-teal text-white"
           aria-label="Add photo"
         >
@@ -488,6 +510,7 @@ function PhotosSection() {
         </button>
       </div>
 
+      {/* Web-only hidden file input */}
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
 
       {isLoading && (
@@ -505,21 +528,18 @@ function PhotosSection() {
       )}
       {!isLoading && !error && (photos ?? []).length > 0 && (
         <div className="px-4 grid grid-cols-2 gap-2">
-          {(photos ?? []).map((photo) => {
-            const url = getPublicUrl(photo.storage_path)
-            return (
-              <button
-                key={photo.id}
-                onClick={() => setViewingPhoto(photo)}
-                className="relative aspect-square rounded-lg overflow-hidden bg-[var(--color-background-secondary)]"
-              >
-                <img src={url} alt={photo.caption ?? ''} className="w-full h-full object-cover" />
-                <div className="absolute bottom-0 inset-x-0 px-2 py-1.5 bg-gradient-to-t from-black/60 to-transparent">
-                  <p className="text-[10px] text-white/90">{formatDate(photo.taken_at)}</p>
-                </div>
-              </button>
-            )
-          })}
+          {(photos ?? []).map((photo) => (
+            <button
+              key={photo.id}
+              onClick={() => setViewingPhoto(photo)}
+              className="relative aspect-square rounded-lg overflow-hidden bg-[var(--color-background-secondary)]"
+            >
+              <img src={photo.signed_url} alt={photo.caption ?? ''} className="w-full h-full object-cover" />
+              <div className="absolute bottom-0 inset-x-0 px-2 py-1.5 bg-gradient-to-t from-black/60 to-transparent">
+                <p className="text-[10px] text-white/90">{formatDate(photo.taken_at)}</p>
+              </div>
+            </button>
+          ))}
         </div>
       )}
 
@@ -536,7 +556,7 @@ function PhotosSection() {
       {viewingPhoto && (
         <PhotoViewer
           photo={viewingPhoto}
-          publicUrl={getPublicUrl(viewingPhoto.storage_path)}
+          publicUrl={viewingPhoto.signed_url}
           onClose={() => setViewingPhoto(null)}
         />
       )}

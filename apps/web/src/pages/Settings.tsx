@@ -244,6 +244,27 @@ function PeptideEditRow({ peptide }: { peptide: Peptide }) {
     )
   }
 
+  if (peptide.is_default) {
+    return (
+      <div
+        className="w-full flex items-center justify-between px-4 py-3 border-b border-[var(--color-border-tertiary)]"
+        style={{ borderBottomWidth: '0.5px' }}
+      >
+        <div>
+          <p className="text-[14px] text-[var(--color-text-primary)]">{peptide.name}</p>
+          {peptide.typical_dose_mcg && (
+            <p className="text-[11px] text-[var(--color-text-tertiary)]">
+              {peptide.typical_dose_mcg} mcg · {peptide.typical_frequency ?? ''}
+            </p>
+          )}
+        </div>
+        <span className="text-[10px] text-[var(--color-text-tertiary)] bg-[var(--color-background-secondary)] px-2 py-0.5 rounded-full shrink-0">
+          Library
+        </span>
+      </div>
+    )
+  }
+
   return (
     <button
       onClick={startEdit}
@@ -258,11 +279,7 @@ function PeptideEditRow({ peptide }: { peptide: Peptide }) {
           </p>
         )}
       </div>
-      {peptide.is_default && (
-        <span className="text-[10px] text-[var(--color-text-tertiary)] bg-[var(--color-background-secondary)] px-2 py-0.5 rounded-full shrink-0">
-          Default
-        </span>
-      )}
+      <ChevronRight size={16} className="text-[var(--color-text-tertiary)] shrink-0" />
     </button>
   )
 }

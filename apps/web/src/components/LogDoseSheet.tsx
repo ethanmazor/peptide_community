@@ -81,14 +81,13 @@ export default function LogDoseSheet({ item, open, onClose, onDepleted }: Props)
   }
 
   return (
-    <Drawer.Root open={open} onOpenChange={(v) => !v && onClose()} snapPoints={['95%']}>
+    <Drawer.Root open={open} onOpenChange={(v) => !v && onClose()}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
         <Drawer.Content
           className="fixed inset-x-0 bottom-0 z-50 flex justify-center focus:outline-none"
-          style={{ height: '95dvh' }}
         >
-          <div className="w-full max-w-[480px] flex flex-col rounded-t-xl bg-[var(--color-background-primary)] overflow-hidden">
+          <div className="w-full max-w-[480px] flex flex-col rounded-t-xl bg-[var(--color-background-primary)] overflow-hidden max-h-[95dvh]">
           {/* Handle */}
           <div className="flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-8 h-[3px] rounded-full bg-[var(--color-border-secondary)]" />

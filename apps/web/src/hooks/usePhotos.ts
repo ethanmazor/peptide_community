@@ -8,6 +8,7 @@ export interface PhotoEntry {
   dose_log_id: string
   user_id: string
   storage_path: string
+  signed_url: string
   caption: string | null
   taken_at: string
   dose_log: {
@@ -45,7 +46,21 @@ async function fetchPhotos(): Promise<PhotoEntry[]> {
     .order('taken_at', { ascending: false })
 
   if (error) throw error
-  return (data ?? []) as PhotoEntry[]
+
+  const rows = (data ?? []) as Omit<PhotoEntry, 'signed_url'>[]
+  if (rows.length === 0) return []
+
+  // Batch-sign all URLs (60 min expiry)
+  const { data: signed } = await supabase.storage
+    .from('progress-photos')
+    .createSignedUrls(rows.map((r) => r.storage_path), 3600)
+
+  const urlMap: Record<string, string> = {}
+  for (const s of signed ?? []) {
+    if (s.signedUrl && s.path) urlMap[s.path] = s.signedUrl
+  }
+
+  return rows.map((r) => ({ ...r, signed_url: urlMap[r.storage_path] ?? '' }))
 }
 
 async function fetchRecentDoseLogs(): Promise<RecentDoseLog[]> {
@@ -92,6 +107,7 @@ export function useRecentDoseLogs() {
   })
 }
 
+/** @deprecated signed_url is now pre-fetched on PhotoEntry — use photo.signed_url directly */
 export function useGetPhotoUrl() {
   return (storagePath: string) => {
     const { data } = supabase.storage

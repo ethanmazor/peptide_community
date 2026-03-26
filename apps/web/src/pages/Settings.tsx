@@ -488,6 +488,76 @@ function NotificationsSection() {
   )
 }
 
+function HealthSection() {
+  const { data: profile } = useProfile()
+
+  const age = profile?.age ?? null
+  const sex = profile?.sex ?? null
+  const heightCm = profile?.height_cm ?? null
+  const weightKg = profile?.weight_kg ?? null
+  const weightUnit = profile?.weight_unit ?? 'lbs'
+  const bodyFat = profile?.body_fat_pct ?? null
+  const goals = profile?.goals ?? []
+  const goalsNotes = profile?.goals_notes ?? null
+
+  const weightDisplay = weightKg !== null
+    ? weightUnit === 'lbs'
+      ? `${Math.round(weightKg * 2.20462 * 10) / 10} lbs`
+      : `${weightKg} kg`
+    : null
+
+  const sexLabel: Record<string, string> = {
+    male: 'Male',
+    female: 'Female',
+    prefer_not_to_say: 'Prefer not to say',
+  }
+
+  const summaryParts = [
+    sex ? sexLabel[sex] : null,
+    age ? `${age} y/o` : null,
+    heightCm ? `${heightCm} cm` : null,
+    weightDisplay,
+    bodyFat ? `${bodyFat}% BF` : null,
+  ].filter(Boolean)
+
+  return (
+    <div>
+      <div
+        className="px-4 py-3 border-b border-[var(--color-border-tertiary)]"
+        style={{ borderBottomWidth: '0.5px' }}
+      >
+        {summaryParts.length > 0 ? (
+          <p className="text-[13px] text-[var(--color-text-secondary)]">
+            {summaryParts.join(' · ')}
+          </p>
+        ) : (
+          <p className="text-[13px] text-[var(--color-text-tertiary)]">Not set</p>
+        )}
+        {goals.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {goals.map((g) => (
+              <span
+                key={g}
+                className="px-2 py-0.5 rounded-full text-[11px] bg-teal/10 text-teal"
+              >
+                {g}
+              </span>
+            ))}
+          </div>
+        )}
+        {goalsNotes && (
+          <p className="text-[12px] text-[var(--color-text-secondary)] mt-1.5 italic">
+            {goalsNotes}
+          </p>
+        )}
+      </div>
+      <Link to="/onboarding?edit=true">
+        <SettingsRow label="Edit health & goals" />
+      </Link>
+    </div>
+  )
+}
+
 function ProtocolSection() {
   const { data } = useHomeData()
   const protocol = data?.protocol
@@ -537,6 +607,9 @@ export default function Settings() {
 
       <SectionHeader title="Profile" />
       <ProfileSection />
+
+      <SectionHeader title="Health & Goals" />
+      <HealthSection />
 
       <SectionHeader title="Notifications" />
       <NotificationsSection />

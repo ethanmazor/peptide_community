@@ -11,6 +11,7 @@ import PeptideDatabase from './pages/PeptideDatabase'
 import Settings from './pages/Settings'
 import ProtocolBuilder from './pages/ProtocolBuilder'
 import VialSetup from './pages/VialSetup'
+import Onboarding from './pages/Onboarding'
 
 function App() {
   const { loading } = useSession()
@@ -29,6 +30,7 @@ function App() {
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route element={<ProtectedLayout />}>
         {/* Full-screen flows outside the tab bar */}
+        <Route path="onboarding" element={<Onboarding />} />
         <Route path="settings/protocols/new" element={<ProtocolBuilder />} />
         <Route path="settings/protocols/:id/edit" element={<ProtocolBuilder />} />
         <Route path="vial-setup" element={<VialSetup />} />

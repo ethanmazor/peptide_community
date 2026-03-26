@@ -325,3 +325,19 @@ select cron.schedule(
   $$
 );
 */
+
+-- ─────────────────────────────────────────────
+-- 8. MIGRATION — onboarding & health profile
+-- Run this section if you already ran setup.sql before this was added.
+-- ─────────────────────────────────────────────
+
+alter table public.profiles
+  add column if not exists age              integer,
+  add column if not exists sex              text check (sex in ('male', 'female', 'prefer_not_to_say')),
+  add column if not exists height_cm        numeric,
+  add column if not exists weight_kg        numeric,
+  add column if not exists body_fat_pct     numeric,
+  add column if not exists weight_unit      text default 'lbs' check (weight_unit in ('lbs', 'kg')),
+  add column if not exists goals            text[],
+  add column if not exists goals_notes      text,
+  add column if not exists onboarding_completed boolean default false;

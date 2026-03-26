@@ -1,15 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useSession } from '../contexts/SessionContext'
+import type { Profile } from '@peptide/types'
 
-export interface Profile {
-  id: string
-  display_name: string | null
-  email: string | null
-  notification_time: string | null
-  reminder_lead_min: number
-  created_at: string
-}
+export type { Profile }
 
 async function fetchProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useHomeData } from '../hooks/useHomeData'
+import { useProfile } from '../hooks/useSettings'
 import CycleProgressBar from '../components/CycleProgressBar'
 import DoseCard from '../components/DoseCard'
 import LogDoseSheet from '../components/LogDoseSheet'
@@ -12,6 +13,7 @@ import type { HomeProtocolPeptide } from '../hooks/useHomeData'
 export default function Home() {
   const navigate = useNavigate()
   const { data, isLoading, error } = useHomeData()
+  const { data: profile } = useProfile()
   const [sheetItem, setSheetItem] = useState<HomeProtocolPeptide | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
@@ -56,6 +58,30 @@ export default function Home() {
   const { protocol, items } = data ?? { protocol: null, items: [] }
 
   if (!protocol) {
+    // New user: onboarding not yet completed → prompt profile setup first
+    if (profile && !profile.onboarding_completed) {
+      return (
+        <div className="flex flex-col items-center justify-center px-6 pt-24 text-center">
+          <p className="text-[16px] font-medium mb-2">Welcome 👋</p>
+          <p className="text-[13px] text-[var(--color-text-secondary)] mb-6">
+            Before creating a protocol, tell us a bit about yourself so we can personalise your experience.
+          </p>
+          <Link
+            to="/onboarding"
+            className="h-11 px-6 flex items-center justify-center bg-teal text-white text-[14px] font-medium rounded-lg"
+          >
+            Set up my profile
+          </Link>
+          <Link
+            to="/settings/protocols/new"
+            className="mt-3 text-[13px] text-[var(--color-text-secondary)]"
+          >
+            Skip — create a protocol
+          </Link>
+        </div>
+      )
+    }
+
     return (
       <div className="flex flex-col items-center justify-center px-6 pt-24 text-center">
         <p className="text-[16px] font-medium mb-2">No active protocol</p>

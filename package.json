@@ -3,7 +3,9 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --parallel --filter './apps/*' dev",
-    "build": "pnpm --filter './packages/*' build && pnpm --filter './apps/*' build",
+    "mobile": "pnpm --filter mobile start",
+    "api": "pnpm --filter api dev",
+    "build": "pnpm --filter './packages/*' build && pnpm --filter api build",
     "lint": "pnpm --recursive lint",
     "typecheck": "pnpm --recursive typecheck"
   },

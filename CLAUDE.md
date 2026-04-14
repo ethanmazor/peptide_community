@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Status
 
-Scaffold, auth, and Home screen are implemented. Supabase SQL is ready to run (`supabase/setup.sql`). Env vars need to be filled in before the app can run against a real database.
+Migrated from React + Vite + Capacitor web to **Expo (React Native)** — mobile-only. Supabase SQL is ready to run (`supabase/setup.sql`). Env vars need to be filled in before the app can run against a real database.
 
 ## Monorepo Structure
 
 ```
 /
 ├── apps/
-│   ├── web/          # React + TypeScript + Vite frontend (Vercel)
+│   ├── mobile/       # Expo + React Native + Expo Router (iOS/Android)
 │   └── api/          # Hono TypeScript backend (Railway)
 ├── packages/
 │   └── types/        # Shared TypeScript interfaces (imported by both apps)
@@ -30,11 +30,10 @@ Package manager: **pnpm** with workspaces.
 pnpm install              # Install all workspace deps
 
 # Development
-pnpm --filter web dev     # Frontend at localhost:5173
-pnpm --filter api dev     # Backend at localhost:3001
+pnpm mobile               # Start Expo (Metro) bundler
+pnpm api                  # Backend at localhost:3001
 
 # Build
-pnpm --filter web build
 pnpm --filter api build
 
 # Typecheck
@@ -44,20 +43,23 @@ pnpm typecheck
 ## Architecture
 
 ### Data Flow
-- **`packages/types`** defines all shared TypeScript interfaces. Both `apps/web` and `apps/api` import from `@peptide/types` — never duplicate type definitions.
-- **Frontend** calls the Hono API for mutations/reminders; calls Supabase directly for reads and photo uploads.
-- **Photos** upload directly to Supabase Storage from the browser — never proxied through the backend.
-- **JWT auth**: Supabase Auth issues JWTs; frontend sends `Authorization: Bearer <token>` on every API request; backend verifies via Supabase admin client.
+- **`packages/types`** defines all shared TypeScript interfaces. Both `apps/mobile` and `apps/api` import from `@peptide/types` — never duplicate type definitions.
+- **Mobile** calls the Hono API for mutations/reminders; calls Supabase directly for reads and photo uploads.
+- **Photos** upload directly to Supabase Storage from the device using `expo-image-picker` → blob → Supabase client — never proxied through the backend.
+- **JWT auth**: Supabase Auth issues JWTs (persisted via `@react-native-async-storage/async-storage`); mobile sends `Authorization: Bearer <token>` on every API request; backend verifies via Supabase admin client.
 
 ### Backend (`apps/api`)
 Hono app with route files per resource (`protocols`, `peptides`, `doses`, `vials`, `photos`), a JWT auth middleware, and a Supabase admin client in `lib/supabase.ts`.
 
-### Frontend (`apps/web`)
-React + Vite SPA. Five bottom-tab screens: Home, History, Calculator, Photos, Settings. Key patterns:
-- `lib/supabase.ts` — Supabase client (anon key)
-- `lib/api.ts` — typed fetch wrapper for the Hono API
-- Protocol Builder is a **single component with local step state** (no separate routes per step)
-- Log Dose is a **vaul bottom sheet**, not a page
+### Mobile (`apps/mobile`)
+Expo SDK 52 + **Expo Router 4** (file-based routing). Route groups: `(auth)` for login/callback, `(app)` for the authenticated shell, `(app)/(tabs)` for the 5-tab navigator (Home, Progress, Calculator, Peptides, Settings). Key patterns:
+- `lib/supabase.ts` — Supabase client with AsyncStorage session persistence + `react-native-url-polyfill`
+- `lib/api.ts` — typed fetch wrapper for the Hono API (reads `process.env.EXPO_PUBLIC_API_URL`)
+- `lib/colors.ts` — design tokens (teal `#1D9E75`, bg/text/border scales)
+- Protocol Builder is a **shared component with local step state** (`components/ProtocolBuilder.tsx`) mounted at `/protocols/new` and `/protocols/[id]/edit`
+- Log Dose is a **@gorhom/bottom-sheet**, not a screen
+- Tailwind classes via **NativeWind v4** (`tailwind.config.ts` exposes `bg-bg-*`, `text-txt-*`, `border-bdr-*`, `bg-teal`)
+- Charts via **victory-native**; icons via **lucide-react-native**; photo picker via **expo-image-picker**
 
 ### Database (Supabase Postgres)
 See `docs/schema.md` for full table definitions and RLS policies. Key rules:
@@ -71,18 +73,16 @@ See `docs/schema.md` for full table definitions and RLS policies. Key rules:
 
 - **TypeScript everywhere** with `"strict": true` in all `tsconfig.json` files — non-negotiable
 - **Teal accent** `#1D9E75` — used only for interactive/active states (not decorative)
-- **Mobile-first** at 375px, max content width 480px; respect `env(safe-area-inset-*)` for iOS
-- **shadcn/ui** components installed individually as needed (not bulk-imported)
-- **Recharts** for the 7-day trend bar chart; **vaul** for bottom sheets; **Lucide React** for icons (20px stroke)
+- **Mobile-only** — drop web entirely; target iOS/Android via Expo
 - Calculator screen is **pure client-side**: `concentration = (vial_mg × 1000) ÷ (bac_ml × 100)`
 
 ## Environment Variables
 
-`apps/web/.env.local`:
+`apps/mobile/.env.local`:
 ```
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
-VITE_API_URL=http://localhost:3001
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_ANON_KEY=
+EXPO_PUBLIC_API_URL=http://localhost:3001
 ```
 
 `apps/api/.env`:
@@ -106,3 +106,4 @@ PORT=3001
 | `docs/schema.md` | Full DB schema with RLS policies |
 | `docs/stack.md` | Technology choices and rationale |
 | `docs/ux.md` | Visual design system, component patterns, Tailwind config |
+| `docs/superpowers/plans/2026-04-13-expo-migration.md` | Expo migration plan |

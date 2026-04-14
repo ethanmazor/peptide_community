@@ -13,7 +13,19 @@
       "Bash(curl -s http://localhost:4040/api/tunnels)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(t[''''public_url'''']\\) for t in d[''''tunnels'''']]\")",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(curl -s http://localhost:3001/)",
+      "Bash(curl:*)",
+      "Bash(node:*)",
+      "Bash(find /home/ethan/Projecrs/peptide_community -path */node_modules/@supabase/supabase-js/package.json)",
+      "Bash(xargs ls:*)",
+      "Bash(kill 65243 14534 13577)",
+      "Bash(kill 13572 13509)",
+      "Bash(npx cap:*)",
+      "Bash(find /home/ethan/Projecrs/peptide_community/apps/web/ios -name Info.plist -o -name Podfile -o -name *.xcscheme)",
+      "Bash(docker --version)",
+      "Bash(git push:*)",
+      "Bash(wc -l /home/ethan/Projecrs/peptide_community/apps/web/src/pages/*.tsx /home/ethan/Projecrs/peptide_community/apps/web/src/components/*.tsx)"
     ]
   }
 }

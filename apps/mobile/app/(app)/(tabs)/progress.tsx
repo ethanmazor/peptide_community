@@ -13,12 +13,6 @@ import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useLocalSearchParams } from 'expo-router'
 import { Camera, Plus, X, ChevronLeft } from 'lucide-react-native'
-import {
-  VictoryBar,
-  VictoryChart,
-  VictoryLine,
-  VictoryAxis,
-} from 'victory-native'
 import { useHistory } from '../../../hooks/useHistory'
 import type { HistoryEntry } from '../../../hooks/useHistory'
 import {
@@ -130,31 +124,30 @@ function MetricCards({
         </Pressable>
       </View>
       {chartData.length > 1 && (
-        <View style={{ height: 80 }}>
-          <VictoryChart
-            width={chartWidth}
-            height={80}
-            padding={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            domainPadding={{ x: 12 }}
-          >
-            <VictoryAxis
-              style={{
-                axis: { stroke: 'transparent' },
-                tickLabels: { fill: 'transparent' },
-              }}
-            />
-            <VictoryBar
-              data={chartData}
-              cornerRadius={{ top: 2 }}
-              style={{
-                data: {
-                  fill: ({ datum }: any) =>
-                    datum.x === maxIdx ? colors.teal : `${colors.teal}66`,
-                  width: 14,
-                },
-              }}
-            />
-          </VictoryChart>
+        <View
+          style={{ height: 64, flexDirection: 'row', alignItems: 'flex-end', gap: 4, width: chartWidth - 32 }}
+        >
+          {(() => {
+            const values = chartData.map((d) => d.y)
+            const min = Math.min(...values)
+            const max = Math.max(...values)
+            const range = max - min || 1
+            return chartData.map((d, idx) => {
+              const norm = ((d.y - min) / range) * 0.8 + 0.2
+              return (
+                <View
+                  key={idx}
+                  style={{
+                    flex: 1,
+                    height: `${norm * 100}%`,
+                    backgroundColor: idx === maxIdx ? colors.teal : `${colors.teal}66`,
+                    borderTopLeftRadius: 2,
+                    borderTopRightRadius: 2,
+                  }}
+                />
+              )
+            })
+          })()}
         </View>
       )}
     </View>
@@ -271,46 +264,42 @@ function LogSection() {
 function StatsChart({
   label,
   data,
-  width,
 }: {
   label: string
   data: { x: number; y: number }[]
-  width: number
 }) {
   if (data.length < 2) return null
+  const values = data.map((d) => d.y)
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const range = max - min || 1
+  const latest = values[values.length - 1]
   return (
     <View className="mb-6">
-      <Text className="text-[11px] font-medium uppercase tracking-widest text-txt-secondary mb-3">
-        {label}
-      </Text>
-      <VictoryChart
-        width={width}
-        height={140}
-        padding={{ top: 8, bottom: 28, left: 40, right: 8 }}
-      >
-        <VictoryAxis
-          style={{
-            axis: { stroke: 'transparent' },
-            grid: { stroke: 'transparent' },
-            ticks: { stroke: 'transparent' },
-            tickLabels: { fill: colors.text.tertiary, fontSize: 10 },
-          }}
-          tickCount={2}
-        />
-        <VictoryAxis
-          dependentAxis
-          style={{
-            axis: { stroke: 'transparent' },
-            grid: { stroke: 'transparent' },
-            ticks: { stroke: 'transparent' },
-            tickLabels: { fill: colors.text.tertiary, fontSize: 10 },
-          }}
-        />
-        <VictoryLine
-          data={data}
-          style={{ data: { stroke: colors.teal, strokeWidth: 2 } }}
-        />
-      </VictoryChart>
+      <View className="flex-row items-baseline justify-between mb-3">
+        <Text className="text-[11px] font-medium uppercase tracking-widest text-txt-secondary">
+          {label}
+        </Text>
+        <Text className="text-[14px] font-medium text-txt-primary">{latest}</Text>
+      </View>
+      <View style={{ height: 80, flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
+        {data.map((d, idx) => {
+          const norm = ((d.y - min) / range) * 0.9 + 0.1
+          return (
+            <View
+              key={idx}
+              style={{
+                flex: 1,
+                height: `${norm * 100}%`,
+                backgroundColor: colors.teal,
+                opacity: idx === data.length - 1 ? 1 : 0.5,
+                borderTopLeftRadius: 1,
+                borderTopRightRadius: 1,
+              }}
+            />
+          )
+        })}
+      </View>
     </View>
   )
 }
@@ -360,9 +349,9 @@ function StatsSection() {
 
   return (
     <View className="px-4 pt-2 pb-6">
-      <StatsChart label="Weight (lbs)" data={weightData} width={chartWidth} />
-      <StatsChart label="Body fat %" data={bfData} width={chartWidth} />
-      <StatsChart label="Lean mass (lbs)" data={leanData} width={chartWidth} />
+      <StatsChart label="Weight (lbs)" data={weightData} />
+      <StatsChart label="Body fat %" data={bfData} />
+      <StatsChart label="Lean mass (lbs)" data={leanData} />
     </View>
   )
 }

@@ -25,7 +25,9 @@
       "Bash(find /home/ethan/Projecrs/peptide_community/apps/web/ios -name Info.plist -o -name Podfile -o -name *.xcscheme)",
       "Bash(docker --version)",
       "Bash(git push:*)",
-      "Bash(wc -l /home/ethan/Projecrs/peptide_community/apps/web/src/pages/*.tsx /home/ethan/Projecrs/peptide_community/apps/web/src/components/*.tsx)"
+      "Bash(wc -l /home/ethan/Projecrs/peptide_community/apps/web/src/pages/*.tsx /home/ethan/Projecrs/peptide_community/apps/web/src/components/*.tsx)",
+      "Bash(timeout 15 npx expo-doctor)",
+      "Bash(npx expo:*)"
     ]
   }
 }
